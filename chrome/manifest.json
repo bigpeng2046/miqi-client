@@ -11,12 +11,14 @@
 	
 	"background": {
 		"scripts": [
+			"background/miqi-client.js",
+			"background/init.js"
 			]
 		},
 	"content_scripts": [
 		{
 			"matches": ["http://*/*", "https://*/*"],
-			"js": ["jquery-1.11.3.js", "jquery-ui-1.11.4.js", "qrcode.js", "miqi-client.js", "page.js"],
+			"js": ["jquery-1.11.3.js", "jquery-ui-1.11.4.js", "qrcode.js", "page.js"],
 			"css": ["jquery-ui-1.11.4.css", "page.css"],
 			"run_at": "document_idle",
 			"all_frames": true

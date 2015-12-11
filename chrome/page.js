@@ -1,3 +1,5 @@
+var globalCredentialFields;
+
 $(function() {
 	var formFilter = "form";
 	var inputFilter = "input[type='text'], input[type='email'], input[type='password'], input[type='tel'], input[type='number'], input:not([type])";
@@ -25,6 +27,16 @@ $(function() {
 			icon.setPosition();
 		}
 	});	
+	
+	chrome.extension.onMessage.addListener(function(request, sender, callback) {
+		if (request.action === "set_credential") {
+			if (globalCredentialFields) {
+				dialog.close();
+				globalCredentialFields.inputs[0].val(request.message.headers["UserName"]);
+				globalCredentialFields.passwords[0].val(request.message.headers["Password"]);
+			}
+		}
+	});
 });
 
 var CredentialIcon = function(credentialFields, qrcodeDialog) {
@@ -47,12 +59,8 @@ var CredentialIcon = function(credentialFields, qrcodeDialog) {
 		iconDiv.click(function(e) {
 			e.preventDefault();
 			
-			qrcodeDialog.open(iconDiv, function(message) {
-				if (credentialFields) {
-					credentialFields.inputs[0].val(message.headers["UserName"]);
-					credentialFields.passwords[0].val(message.headers["Password"]);
-				}				
-			});
+			globalCredentialFields = credentialFields;
+			qrcodeDialog.open(iconDiv);
 		});
 		
 		$("body").append(iconDiv);
@@ -120,37 +128,32 @@ var QRCodeDialog = function() {
 			minWidth: 280,
 			title: "Fill in the form by scanning",
 			open: function(event, ui) {
-				socket = new MiqiClient("ws://172.27.35.9:54321", function(message) {				
-					qrCode.makeCode(message.toString());
+				chrome.extension.sendMessage({
+					action: 'get_server_info',
 				}, function(message) {
-					if (onSetCredential) {
-						onSetCredential(message);
-					}
-					dialogDiv.dialog("close");
+					qrCode.makeCode(message);
 				});
 				
 				$(".ui-widget-overlay").click(function() {
 					dialogDiv.dialog("close");
 				});
-				
-				socket.connect();
 			},
 			close: function(event, ui) {
-				if (socket) {
-					socket.disconnect();
-					socket = null;
-				}
+				chrome.extension.sendMessage({ action: 'close_connection' });
 			}
 		});
 	})();
 	
 	return {
-		open: function(credentialIcon, setCredential) {
-			onSetCredential = setCredential;
+		open: function(credentialIcon) {
 			if(dialogDiv.dialog("isOpen")) {
 				dialogDiv.dialog("close");
 			} else {
-				dialogDiv.dialog("option", "position", { my: "left-10px top", at: "center bottom", of: credentialIcon });
+				dialogDiv.dialog("option", "position", { 
+					my: "left-10px top", 
+					at: "center bottom", 
+					of: credentialIcon 
+				});
 				dialogDiv.dialog("open");
 			}
 		},
