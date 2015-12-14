@@ -11,6 +11,7 @@
 	
 	"background": {
 		"scripts": [
+			"background/crypto-js.js",
 			"background/miqi-client.js",
 			"background/init.js"
 			]

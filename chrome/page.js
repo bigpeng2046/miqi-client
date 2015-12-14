@@ -32,6 +32,7 @@ $(function() {
 		if (request.action === "set_credential") {
 			if (globalCredentialFields) {
 				dialog.close();
+
 				globalCredentialFields.inputs[0].val(request.message.headers["UserName"]);
 				globalCredentialFields.passwords[0].val(request.message.headers["Password"]);
 			}
@@ -131,7 +132,9 @@ var QRCodeDialog = function() {
 				chrome.extension.sendMessage({
 					action: 'get_server_info',
 				}, function(message) {
-					qrCode.makeCode(message);
+					if (message) {
+						qrCode.makeCode(message);
+					}
 				});
 				
 				$(".ui-widget-overlay").click(function() {
@@ -140,6 +143,7 @@ var QRCodeDialog = function() {
 			},
 			close: function(event, ui) {
 				chrome.extension.sendMessage({ action: 'close_connection' });
+				qrCode.makeCode("");
 			}
 		});
 	})();

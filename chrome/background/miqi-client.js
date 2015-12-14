@@ -57,7 +57,7 @@ var MiqiClient = function(serverAddr, onGetServerInfoResp, onSetCredential) {
 };
 
 var MiqiMessage = function(response) {
-	var commandv = '';
+	var command = '';
 	var protocol = '';
 	var headers = {};
 	
@@ -87,6 +87,14 @@ var MiqiMessage = function(response) {
 		command: command,
 		protocol: protocol,
 		headers: headers,
-		toString: function() { return response; },
+		toString: function() {
+			var msg = command + " " + protocol + "\r\n";
+			for (var key in headers) {
+				if (key.length > 0) {
+					msg = msg + key + ":" + headers[key] + "\r\n";
+				}
+			}
+			return msg;
+		},
 	};
 };
